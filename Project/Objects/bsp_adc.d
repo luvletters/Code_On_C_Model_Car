@@ -1,4 +1,4 @@
-.\objects\bsp_adc.o: Objects\bsp_adc.c
+.\objects\bsp_adc.o: ..\Board\src\bsp_adc.c
 .\objects\bsp_adc.o: ..\Board\inc\bsp_adc.h
 .\objects\bsp_adc.o: E:\special things\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include\stm32f10x.h
 .\objects\bsp_adc.o: ..\CMSIS\CoreSupport\core_cm3.h

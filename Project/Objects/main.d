@@ -39,3 +39,4 @@
 .\objects\main.o: ..\Board\inc\stdtimer.h
 .\objects\main.o: ..\Board\inc\EncoderR.h
 .\objects\main.o: ..\Board\inc\EncoderL.h
+.\objects\main.o: ..\Board\inc\bsp_key.h

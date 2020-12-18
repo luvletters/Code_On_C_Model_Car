@@ -16,13 +16,24 @@
 	我们这里记录9000个数进入定时器更新(7199+1)*(1/7200)=1s,也就是1s进入一次更新Update
 */
 //简单进行定时器初始化,设置 预装载值 和 分频系数
-void MY_TIM3_Init(u16 arr,u16 psc){
+#include "stm32f10x.h"
+#include "delay.h"
+#include "Servo.h"
+#include "stm32f10x.h"
+#include "bsp_usart.h"
+#include "bsp_adc.h"
+#include "motor.h"
+#include "math.h"
+#include "oled.h"
+#include "EncoderR.h"
+#include "EncoderL.h"
+void MY_TIM6_Init(u16 arr,u16 psc){
 	
 	//初始化结构体
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
 	
 	//1.分配时钟
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3,ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6,ENABLE);
 	
 	//2.初始化定时器相关配置
 	TIM_TimeBaseStructure.TIM_Period = arr;
@@ -32,9 +43,9 @@ void MY_TIM3_Init(u16 arr,u16 psc){
 		设置的这个值不会影响定时器的时钟频率,我们一般设置为TIM_CKD_DIV1,也就是不分频*/
 	TIM_TimeBaseStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up; //向上计数
-	TIM_TimeBaseInit(TIM3,&TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(TIM6,&TIM_TimeBaseStructure);
 	
 	//3.打开定时器
-	TIM_Cmd(TIM3,ENABLE);
+	TIM_Cmd(TIM6,ENABLE);
 }
 

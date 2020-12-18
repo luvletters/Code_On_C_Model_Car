@@ -1,4 +1,4 @@
-.\objects\bsp_usart.o: Objects\bsp_usart.c
+.\objects\bsp_usart.o: ..\Board\src\bsp_usart.c
 .\objects\bsp_usart.o: ..\Board\inc\bsp_usart.h
 .\objects\bsp_usart.o: E:\special things\Keil_v5\ARM\PACK\Keil\STM32F1xx_DFP\2.3.0\Device\Include\stm32f10x.h
 .\objects\bsp_usart.o: ..\CMSIS\CoreSupport\core_cm3.h
