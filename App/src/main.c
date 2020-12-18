@@ -25,8 +25,9 @@ extern __IO uint16_t ADC_ConvertedValue[NOFCHANEL];
 
 // 局部变量，用于保存转换计算后的电压值 	 
 float ADC_ConvertedValueLocal[NOFCHANEL];    
-float LastSensorDevitation=0,Lastsensor;
-float away=1;
+float LastSensorDevitation=0;
+float w=1;
+
 //lalala
 int i=0;
 int j=0;
@@ -45,6 +46,9 @@ int main()
 	
 	
 	OLED_init();
+	
+	
+	
 	
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   INIT1  &&&&&&&&&&&&&&&&&&&&&&&&&
 	GPIO_InitTypeDef GPIO_InitStructure;	//定义一个GPIO结构体变量
@@ -101,7 +105,7 @@ int main()
 	//motor set
 	tim_motor_init();
 	
-MY_TIM6_Init(71,9999);
+MY_TIM3_Init(71,9999);
 
 /*
 	while(1)
@@ -135,7 +139,7 @@ MY_TIM6_Init(71,9999);
 	{ 
 		//Label_1:
 		
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
    		ADC_ConvertedValueLocal[0] =(float) ADC_ConvertedValue[0]/4096*3.3;
 			ADC_ConvertedValueLocal[1] =(float) ADC_ConvertedValue[1]/4096*3.3;
 			ADC_ConvertedValueLocal[2] =(float) ADC_ConvertedValue[2]/4096*3.3;
@@ -151,7 +155,7 @@ MY_TIM6_Init(71,9999);
 		if(	ADC_ConvertedValueLocal[4]<0.07){ADC_ConvertedValueLocal[4]=0;}//0.07
 		
 		
-		ADC_ConvertedValueLocal[0]*=100;//                            voltage get 
+		ADC_ConvertedValueLocal[0]*=100;
 		ADC_ConvertedValueLocal[1]*=100;
 		ADC_ConvertedValueLocal[2]*=100;
 		ADC_ConvertedValueLocal[3]*=100;
@@ -162,113 +166,104 @@ MY_TIM6_Init(71,9999);
 		ADC_ConvertedValueLocal[2]/=1.86;
 		ADC_ConvertedValueLocal[3]/=1.487;//1.487
 		ADC_ConvertedValueLocal[4]/=2.4210;
-		//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+		
 		float SensorDevitation;
 		float r_s=85,tl=0;
-		if(ADC_ConvertedValueLocal[4]<0.01)      //                          out left        
-		{tl=200;}
-
-    float enbig_1=500;
-    float pid_P,pid_D,pid_I,pid_center=1550+tl,I_max=30;//                   servo  PID
-		float origin_p=1.1,origin_i=0.0001,origin_d=0.001;
-    float g_Proportion=origin_p,g_Differential=origin_d,g_Integral=origin_i;
-    SensorDevitation = (sqrt(ADC_ConvertedValueLocal[3])-sqrt(ADC_ConvertedValueLocal[1]))/(ADC_ConvertedValueLocal[3]+ADC_ConvertedValueLocal[1]);
+		if(ADC_ConvertedValueLocal[4]<0.01)
+		{tl=400;}
+		float away;
+    float enbig_1=150,ensmall_m=0.045;
+    float pid_P,pid_D=0,pid_I,pid_center=1550+tl,I_max=30;
+    float g_Proportion=1.1,g_Differential=0.0000011,g_Integral=0.00000002;
+		
+		away=1*w;
+		
+    SensorDevitation = (ADC_ConvertedValueLocal[3]-ADC_ConvertedValueLocal[1])/(ADC_ConvertedValueLocal[3]+ADC_ConvertedValueLocal[1]);
     SensorDevitation = SensorDevitation*enbig_1;
-		
-		
-		if(SensorDevitation>50)
-    {
-			g_Proportion   = origin_p+0.1;
-			g_Differential = origin_d;
-			g_Integral     = origin_i;
-		}
-		
-		else if(SensorDevitation>20&&SensorDevitation<50)
-    {
-			g_Proportion   = origin_p;
-			g_Differential = origin_d;
-			g_Integral     = origin_i;
-		}
-		
-		else if(SensorDevitation<20)
-		{
-			g_Proportion   = origin_p-0.1;
-			g_Differential = origin_d;
-			g_Integral     = origin_i;
-		}
-		
-    pid_P = SensorDevitation*g_Proportion;
-    pid_D =(SensorDevitation-LastSensorDevitation)*g_Differential;
-    pid_I += SensorDevitation * g_Integral;
 		LastSensorDevitation = SensorDevitation;
-		if(SensorDevitation-LastSensorDevitation>10)
-		{
-			away=1.0;
-		}
-		else if(SensorDevitation-LastSensorDevitation>5&&SensorDevitation-LastSensorDevitation<10)
-		{
-			away=1.0;
-		}
-		else if(SensorDevitation-LastSensorDevitation<5)
-		{
-			away=1.0;
-		}
-		
+		if(SensorDevitation<0.5&&SensorDevitation>-0.5) SensorDevitation=0;
+    pid_P = SensorDevitation*g_Proportion;
+    //pid_D =(SensorDevitation-LastSensorDevitation)*g_Differential;
+    pid_I += SensorDevitation * g_Integral;
 		if(pid_I > I_max){pid_I = I_max;}
 		else if(pid_I < -I_max){pid_I = -I_max;}
     pid_s = pid_center+pid_P+pid_I+pid_D;
 		Servo_open();
-
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+		delay_ms(1);
+		//Servo_close();
+		//adjust: enbig,g_Proportion,g_Differential,g_Integral,I_max,delay.etc.
+		//-------------------servo control end here-----------------------------
 		
-		if(TIM_GetFlagStatus(TIM6,TIM_IT_Update))
+		
+		if(TIM_GetFlagStatus(TIM3,TIM_IT_Update))
 				{
-					Encoder_v1=(short)TIM4->CNT;//Get_Encoder1();                basic timer 10ms
+					Encoder_v1=(short)TIM4->CNT;//Get_Encoder1();
 					Encoder_a1 += Encoder_v1;
 					Encoder_v2=Get_Encoder2();
 					Encoder_a2 += Encoder_v2;
-						
+							
+
+
 					Encoder_Restart2();//清0 cnt值
 					TIM4->CNT = 0;//Encoder_Restart1();//清0 cnt值
 					
-					TIM_ClearFlag(TIM6,TIM_IT_Update);
+					TIM_ClearFlag(TIM3,TIM_IT_Update);
 				}
 		
-		//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=
+		
 	
 		float rp,lp;
-		float conr=0.1818,conl=0.1818,ensmall_m=0.45;//0.45//0.072//0.0675
-		float pid_2center=100;
-		float orginr,orginl;
-				orginr=(pid_2center+SensorDevitation*ensmall_m)*away;
-				orginl=(pid_2center-SensorDevitation*ensmall_m)*away;//                   motor PID 
-		float mP=1;
-		float encoderDevitation_R,encoderDevitation_L;
-		encoderDevitation_L=-orginl+Encoder_v2*conl;
-		encoderDevitation_R=-orginr+Encoder_v1*conr;
+		float conr=1000,conl=1000;
+		float pid_2center=130;
 				
 				
 				
+		char txt[20];
+	  OLED_clear();
+
+		sprintf(txt,"1: %6.1f mV",rp);
+		OLED_show6x8string(40,3,txt);
+			
 				
+		float encoderDevitation_R=0;
+		encoderDevitation_R=-rp+Encoder_v1*conr;
+		float LastencoderDevitation_R=0,enbig_2_R=1;
+		float pid_2p_R,pid_2d_R,pid_2i_R;//  -30
+		float constant_P_R=1,constant_i_R=0.0001,constant_d_R=0.0001;
+		//encoderDevitation_R = 2333-2333;
+		encoderDevitation_R = encoderDevitation_R*enbig_2_R;
+		LastencoderDevitation_R = encoderDevitation_R;
+		pid_2p_R=encoderDevitation_R*constant_P_R;
+		pid_2d_R=(encoderDevitation_R-LastencoderDevitation_R)*constant_d_R;
+		pid_2i_R+=encoderDevitation_R*constant_i_R;
+		if(pid_2i_R > 100){pid_2i_R=100;}
+		else if(pid_2i_R < -100){pid_2i_R=-100;}
+		
+		float encoderDevitation_L=0;
+		encoderDevitation_L=-lp+Encoder_v2*conl;
+		float LastencoderDevitation_L,enbig_2_L=1;
+		float pid_2p_L,pid_2d_L,pid_2i_L;//  -30
+		float constant_P_L=1,constant_i_L=0.0001,constant_d_L=0.0001;
+		//encoderDevitation_L = 2333-2333;
+		encoderDevitation_L = encoderDevitation_L*enbig_2_L;
+		LastencoderDevitation_L = encoderDevitation_L;
+		pid_2p_L=encoderDevitation_L*constant_P_L;
+		pid_2d_L=(encoderDevitation_L-LastencoderDevitation_L)*constant_d_L;
+		pid_2i_L+=encoderDevitation_L*constant_i_L;
+		if(pid_2i_L > 100){pid_2i_L=100;}
+		else if(pid_2i_L < -100){pid_2i_L=-100;}
+		
+		pid_m_R=pid_2p_R+pid_2d_R+pid_2i_R+pid_2center;
+		pid_m_L=pid_2p_L+pid_2d_L+pid_2i_L+pid_2center;
+		
+		rp=(pid_m_R-SensorDevitation*ensmall_m)*away;
+		lp=(pid_m_L-SensorDevitation*ensmall_m)*away;
+		//------------------motor PID end here----------------------------------
 	
-
-
-		rp=orginr-encoderDevitation_L*mP;
-		lp=orginl-encoderDevitation_R*mP;
-
-		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==
-		motor_run(motor_1,(0));//right negative
-		motor_run(motor_3,(0));//left negative
-		
-		//rp=100;lp=100;
-		
-		if(rp>200){rp=200;}
-		if(rp<0){rp=0;}
+		motor_run(motor_1,(30)*away);//right negative
 		motor_run(motor_2,rp);//right positive
-		if(lp<0){lp=0;}
-		if(lp>200){lp=200;}
-		motor_run(motor_4,lp);//left positive                            speed max
-		//                                                               motor run
+		motor_run(motor_3,(30)*away);//left negative
+		motor_run(motor_4,lp);//left positive
 		
 		/* sample
 		motor_run(motor_1,100);//right negative
@@ -277,7 +272,6 @@ MY_TIM6_Init(71,9999);
 		motor_run(motor_4,100);//left positive
 		
 		*/
-		//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 		
 		if(ADC_ConvertedValueLocal[4]>110&&i==0)
 		{
@@ -287,18 +281,21 @@ MY_TIM6_Init(71,9999);
 		motor_run(motor_4,180);//left positive
 			
 			i++;
-					TIM_SetCompare1(TIM_SERVO,1500+0.8*r_s);//                  round island
+					TIM_SetCompare1(TIM_SERVO,1500+0.8*r_s);
 					TIM_SetCompare2(TIM_SERVO,1500+0.8*r_s);
 					TIM_SetCompare3(TIM_SERVO,1500+0.8*r_s);
-				delay_ms(400);
+				delay_ms(500);
 			
 					TIM_SetCompare1(TIM_SERVO,1500+2*r_s);
 					TIM_SetCompare2(TIM_SERVO,1500+2*r_s);
 					TIM_SetCompare3(TIM_SERVO,1500+2*r_s);
-			  delay_ms(800);
+			  delay_ms(1000);
 			
 			}
-		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		
+		
+		//adjust:,enbig_2,constant_P,constant_i,constant_d,I_max,over_m.etc.
+		//-----------------motor control end here------------------------------
 		
 	}
 	
