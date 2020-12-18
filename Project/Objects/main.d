@@ -35,3 +35,7 @@
 .\objects\main.o: ..\Board\inc\bsp_adc.h
 .\objects\main.o: ..\Board\inc\motor.h
 .\objects\main.o: E:\special things\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+.\objects\main.o: ..\Board\inc\oled.h
+.\objects\main.o: ..\Board\inc\stdtimer.h
+.\objects\main.o: ..\Board\inc\EncoderR.h
+.\objects\main.o: ..\Board\inc\EncoderL.h

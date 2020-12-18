@@ -423,6 +423,21 @@
               <FileType>1</FileType>
               <FilePath>..\Board\src\motor.c</FilePath>
             </File>
+            <File>
+              <FileName>oled.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Board\src\oled.c</FilePath>
+            </File>
+            <File>
+              <FileName>EncoderR.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Board\src\EncoderR.c</FilePath>
+            </File>
+            <File>
+              <FileName>EncoderL.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Board\src\EncoderL.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
