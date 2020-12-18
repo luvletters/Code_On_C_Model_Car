@@ -33,7 +33,9 @@ float away=1;
 int i=0;
 int j=0;
 int k=0;
-int o=0;
+int rk=0;
+int p=0;
+int q=0;
 
 // Èí¼þÑÓÊ±
 void Delay(__IO uint32_t nCount)
@@ -108,7 +110,11 @@ int main()
 	
 MY_TIM6_Init(71,9999);
 
-	float r_s=-65;
+
+float lastencoderDevitation_L=0,lastencoderDevitation_R=0;
+
+
+
 	while(1)
 	{
 		  ADC_ConvertedValueLocal[0] =(float) ADC_ConvertedValue[0]/4096*3.3;
@@ -116,46 +122,49 @@ MY_TIM6_Init(71,9999);
 			ADC_ConvertedValueLocal[2] =(float) ADC_ConvertedValue[2]/4096*3.3;
 			ADC_ConvertedValueLocal[3] =(float) ADC_ConvertedValue[3]/4096*3.3;
 			ADC_ConvertedValueLocal[4] =(float) ADC_ConvertedValue[4]/4096*3.3;
-		motor_run(motor_1,100);//right negative
-		motor_run(motor_2,180);//right positive
-		motor_run(motor_3,100);//left negative
-		motor_run(motor_4,180);//left positive
+			motor_run(motor_1,100);//right negative
+			motor_run(motor_2,200);//right positive
+			motor_run(motor_3,100);//left negative
+			motor_run(motor_4,200);//left positive
 			TIM_SetCompare1(TIM_SERVO,1550);
 	    TIM_SetCompare2(TIM_SERVO,1550);
 	    TIM_SetCompare3(TIM_SERVO,1550);
 		if(ADC_ConvertedValueLocal[0]>1.0||ADC_ConvertedValueLocal[2]>1.0)
 		{
-			float sv=-200;
+			float sv=-230;
 			TIM_SetCompare1(TIM_SERVO,1500-sv);
 	    TIM_SetCompare2(TIM_SERVO,1500-sv);
 	    TIM_SetCompare3(TIM_SERVO,1500-sv);
-			delay_ms(2500);
-
+			delay_ms(700);
 			goto Label_1;
 		}
 	}
 	
 
 
-     while(i==2)
+     if(i==2)
 		{
 			Label_2:
-
-//			i++;
-//			j-=1000;
-//			delay_ms(350);
-//			motor_run(motor_1,100);//right negative
-//			motor_run(motor_2,180);//right positive
-//			motor_run(motor_3,100);//left negative
-//			motor_run(motor_4,180);//left positive
-//					TIM_SetCompare1(TIM_SERVO,1500+0.7*r_s);//                  round island
-//					TIM_SetCompare2(TIM_SERVO,1500+0.7*r_s);
-//					TIM_SetCompare3(TIM_SERVO,1500+0.7*r_s);
-//				delay_ms(450);
+			p++;
+			delay_ms(1);
+		}
+			
+		while((p>200)&&(q==0))
+		{
+			q++;
+		motor_run(motor_1,100);//right negative
+		motor_run(motor_2,180);//right positive
+		motor_run(motor_3,100);//left negative
+		motor_run(motor_4,180);//left positive
+					float r_s=-65;
+					TIM_SetCompare1(TIM_SERVO,1500+0.7*r_s);//                  round island
+					TIM_SetCompare2(TIM_SERVO,1500+0.7*r_s);
+					TIM_SetCompare3(TIM_SERVO,1500+0.7*r_s);
+			delay_ms(600);
 //					TIM_SetCompare1(TIM_SERVO,1500+2*r_s);
 //					TIM_SetCompare2(TIM_SERVO,1500+2*r_s);
 //					TIM_SetCompare3(TIM_SERVO,1500+2*r_s);
-//			delay_ms(700);
+//			delay_ms(600);
 			goto Label_3;
 		}
 	while(1)
@@ -231,19 +240,19 @@ MY_TIM6_Init(71,9999);
 		
 		
 		
-		if(SensorDevitation-LastSensorDevitation>10)
-		{
-			away=0.8;
-		}
-		else if(SensorDevitation-LastSensorDevitation>5&&SensorDevitation-LastSensorDevitation<10)
-		{
-			away=1.0;
-		}
-		else if(SensorDevitation-LastSensorDevitation<5)
-		{
-			away=1.0;
-		}
-		
+//		if(SensorDevitation-LastSensorDevitation>10)
+//		{
+//			away=0.8;
+//		}
+//		else if(SensorDevitation-LastSensorDevitation>5&&SensorDevitation-LastSensorDevitation<10)
+//		{
+//			away=1.0;
+//		}
+//		else if(SensorDevitation-LastSensorDevitation<5)
+//		{
+//			away=1.0;
+//		}
+//		
 		if(asb(SensorDevitation)>30)
 		{
 			away=1.45-0.015*asb(SensorDevitation);
@@ -259,7 +268,7 @@ MY_TIM6_Init(71,9999);
 		
 		if( Key_Scan(KEY1_GPIO_PORT,KEY1_GPIO_PIN) == 0  )
 		{
-			o++;
+			rk++;
 		}
 		
 		if(pid_I > I_max){pid_I = I_max;}
@@ -292,17 +301,23 @@ MY_TIM6_Init(71,9999);
 				orginl=(pid_2center-SensorDevitation*ensmall_m)*away;//                   motor PID 
 		float mP=0.4,mi=0.001,md=0.001;
 		float encoderDevitation_R,encoderDevitation_L;
+		float encoder_LI,encoder_RI,Imax=10;
 		encoderDevitation_L=-orginl+Encoder_v2*conl;
 		encoderDevitation_R=-orginr+Encoder_v1*conr;
-				
-				
-				
-				
-	
-
-
-		rp=orginr-encoderDevitation_L*mP;
-		lp=orginl-encoderDevitation_R*mP;
+		
+		encoder_LI+=encoderDevitation_L*mi;
+		encoder_RI+=encoderDevitation_R*md;
+		
+		if(encoder_LI>Imax)encoder_LI=Imax;		
+		else if(encoder_LI<-Imax)encoder_LI=-Imax;
+		if(encoder_RI>Imax)encoder_RI=Imax;		
+		else if(encoder_RI<-Imax)encoder_RI=-Imax;
+     
+		rp=orginr-encoderDevitation_L*mP-(encoderDevitation_L-lastencoderDevitation_L)*md-encoder_RI;
+		lp=orginl-encoderDevitation_R*mP-(encoderDevitation_R-lastencoderDevitation_R)*md-encoder_LI;
+		
+		lastencoderDevitation_L=encoderDevitation_L;
+		lastencoderDevitation_R=encoderDevitation_R;
 
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++==
 		motor_run(motor_1,(0));//right negative
@@ -317,10 +332,36 @@ MY_TIM6_Init(71,9999);
 		motor_run(motor_4,lp);//left positive                            speed max
 		//                                                               motor run
 		
+				if(rk>0)
+		{
+			
+		motor_run(motor_1,0);//right negative
+		motor_run(motor_2,0);//right positive
+		motor_run(motor_3,0);//left negative
+	  motor_run(motor_4,0);//left positive
+//			pid_s=1400;Servo_open();		
+		delay_ms(100);
+			pid_s=1500;Servo_open();
+		motor_run(motor_1,100);//right negative
+		motor_run(motor_2,0);//right positive
+		motor_run(motor_3,100);//left negative
+		motor_run(motor_4,0);//left positive
+			delay_ms(500);
+			pid_s=1700;Servo_open();
+			delay_ms(1600);
+			pid_s=1550;Servo_open();
+			delay_ms(800);
+		motor_run(motor_1,80);//right negative
+		motor_run(motor_2,80);//right positive
+		motor_run(motor_3,80);//left negative
+		motor_run(motor_4,80);//left positive
+			while(1){delay_ms(50000);}
+		}
 		
 	  if(ADC_ConvertedValueLocal[4]>110&&i==0){i++;}
 		if(i==1&&j<3000){j++;delay_ms(1);}
-		if((ADC_ConvertedValueLocal[4]>110)&&(j>2999)&&(i==1)){goto Label_2;i++;}
+		if((ADC_ConvertedValueLocal[4]>110)&&(j>2999)&&(i==1)){goto Label_2;}
+		if((j>2999)&&(i==1)&&(p>0)){goto Label_2;}
 		/* sample
 		motor_run(motor_1,100);//right negative
 		motor_run(motor_2,100);//right positive
@@ -329,24 +370,7 @@ MY_TIM6_Init(71,9999);
 		
 		*/
 		
-		if(o>=1)
-		{
-		delay_ms(50);
-		motor_run(motor_1,80);//right negative
-		motor_run(motor_2,0);//right positive
-		motor_run(motor_3,80);//left negative
-		motor_run(motor_4,0);//left positive
-			delay_ms(1000);
-			pid_s=1700;Servo_open();
-			delay_ms(1000);
-			pid_s=1550;Servo_open();
-			delay_ms(600);
-		motor_run(motor_1,80);//right negative
-		motor_run(motor_2,80);//right positive
-		motor_run(motor_3,80);//left negative
-		motor_run(motor_4,80);//left positive
-			delay_ms(50000);
-		}
+
 	}
 	
 }
