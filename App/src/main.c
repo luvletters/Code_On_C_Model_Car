@@ -122,20 +122,20 @@ float lastencoderDevitation_L=0,lastencoderDevitation_R=0;
 			ADC_ConvertedValueLocal[2] =(float) ADC_ConvertedValue[2]/4096*3.3;
 			ADC_ConvertedValueLocal[3] =(float) ADC_ConvertedValue[3]/4096*3.3;
 			ADC_ConvertedValueLocal[4] =(float) ADC_ConvertedValue[4]/4096*3.3;
-			motor_run(motor_1,100);//right negative
-			motor_run(motor_2,200);//right positive
-			motor_run(motor_3,100);//left negative
-			motor_run(motor_4,200);//left positive
+			motor_run(motor_1,0);//right negative
+			motor_run(motor_2,120);//right positive
+			motor_run(motor_3,0);//left negative
+			motor_run(motor_4,120);//left positive
 			TIM_SetCompare1(TIM_SERVO,1550);
 	    TIM_SetCompare2(TIM_SERVO,1550);
 	    TIM_SetCompare3(TIM_SERVO,1550);
 		if(ADC_ConvertedValueLocal[0]>1.0||ADC_ConvertedValueLocal[2]>1.0)
 		{
-			float sv=-230;
+			float sv=-235;//230
 			TIM_SetCompare1(TIM_SERVO,1500-sv);
 	    TIM_SetCompare2(TIM_SERVO,1500-sv);
 	    TIM_SetCompare3(TIM_SERVO,1500-sv);
-			delay_ms(700);
+			delay_ms(600);
 			goto Label_1;
 		}
 	}
@@ -149,18 +149,18 @@ float lastencoderDevitation_L=0,lastencoderDevitation_R=0;
 			delay_ms(1);
 		}
 			
-		while((p>200)&&(q==0))
+		while((p>160)&&(q==0))
 		{
 			q++;
 		motor_run(motor_1,100);//right negative
 		motor_run(motor_2,180);//right positive
 		motor_run(motor_3,100);//left negative
 		motor_run(motor_4,180);//left positive
-					float r_s=-65;
+					float r_s=-65;//  65
 					TIM_SetCompare1(TIM_SERVO,1500+0.7*r_s);//                  round island
 					TIM_SetCompare2(TIM_SERVO,1500+0.7*r_s);
 					TIM_SetCompare3(TIM_SERVO,1500+0.7*r_s);
-			delay_ms(600);
+			delay_ms(500);
 //					TIM_SetCompare1(TIM_SERVO,1500+2*r_s);
 //					TIM_SetCompare2(TIM_SERVO,1500+2*r_s);
 //					TIM_SetCompare3(TIM_SERVO,1500+2*r_s);
@@ -221,14 +221,14 @@ float lastencoderDevitation_L=0,lastencoderDevitation_R=0;
 		else if(asb(SensorDevitation)>5&&asb(SensorDevitation)<10)
     {
 			g_Proportion   = origin_p+0.1;
-			g_Differential = origin_d;
+			g_Differential = origin_d+2;
 			g_Integral     = origin_i;
 		}
 		
 		else if(asb(SensorDevitation)<5)
 		{
 			g_Proportion   = origin_p;
-			g_Differential = origin_d;
+			g_Differential = origin_d+4;
 			g_Integral     = origin_i;
 		}
 		
@@ -295,11 +295,11 @@ float lastencoderDevitation_L=0,lastencoderDevitation_R=0;
 	
 		float rp,lp;
 		float conr=0.1818,conl=0.1818,ensmall_m=0.20;//0.45//0.072//0.0675
-		float pid_2center=140;
+		float pid_2center=160;
 		float orginr,orginl;
 				orginr=(pid_2center+SensorDevitation*ensmall_m)*away;
 				orginl=(pid_2center-SensorDevitation*ensmall_m)*away;//                   motor PID 
-		float mP=0.4,mi=0.001,md=0.001;
+		float mP=0.15,mi=0.004,md=0.001;//0.4
 		float encoderDevitation_R,encoderDevitation_L;
 		float encoder_LI,encoder_RI,Imax=10;
 		encoderDevitation_L=-orginl+Encoder_v2*conl;
@@ -340,22 +340,22 @@ float lastencoderDevitation_L=0,lastencoderDevitation_R=0;
 		motor_run(motor_3,0);//left negative
 	  motor_run(motor_4,0);//left positive
 //			pid_s=1400;Servo_open();		
-		delay_ms(100);
-			pid_s=1500;Servo_open();
+		delay_ms(140);
+			pid_s=1550;Servo_open();
 		motor_run(motor_1,100);//right negative
 		motor_run(motor_2,0);//right positive
 		motor_run(motor_3,100);//left negative
 		motor_run(motor_4,0);//left positive
-			delay_ms(500);
+			delay_ms(450);
 			pid_s=1700;Servo_open();
-			delay_ms(1600);
+			delay_ms(1200);
 			pid_s=1550;Servo_open();
-			delay_ms(800);
+			delay_ms(350);
 		motor_run(motor_1,80);//right negative
 		motor_run(motor_2,80);//right positive
 		motor_run(motor_3,80);//left negative
 		motor_run(motor_4,80);//left positive
-			while(1){delay_ms(50000);}
+		while(1){delay_ms(350);}
 		}
 		
 	  if(ADC_ConvertedValueLocal[4]>110&&i==0){i++;}
